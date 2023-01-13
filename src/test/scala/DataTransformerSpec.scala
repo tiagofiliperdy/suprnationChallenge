@@ -34,4 +34,13 @@ class DataTransformerSpec extends AnyFunSuite {
 
     assert(result == Left("File doesn't contain only numbers!"))
   }
+
+  test("DataTransformer - should be stack safe") {
+    val reader = new ReaderFromFile[F]("data_big.txt")
+    val dataTransformer = new DataTransformer[F](reader)
+
+    val result = dataTransformer.readData
+
+    assert(result.map(_.keys.size) == Right(2000))
+  }
 }

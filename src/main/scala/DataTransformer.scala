@@ -13,32 +13,36 @@ class DataTransformer[F[_]](reader: Reader[F])(implicit ME: MonadError[F, String
       case Success(value) => value.pure[F]
     }
 
-    def recursive(line: String, currentData: Map[Int, List[Int]], iteration: Int = 0): F[Map[Int, List[Int]]] = {
-      val structureUpdated =
-        line
-          .split(" ")
-          .toList
-          .traverse(toInt)
-          .map(iteration -> _)
-          .map(currentData + _)
+    def aggregateResults(line: String, modelData: ModelData): F[ModelData] =
+      line
+        .split(" ")
+        .toList
+        .traverse(toInt)
+        .map(modelData.iteration -> _)
+        .map(keyValue => modelData.copy(structure = modelData.structure + keyValue, iteration = modelData.iteration + 1))
 
-      for {
-        newStructure <- structureUpdated
-        newLine <- reader.readLine()
-        result <- newLine match {
-          case Some(newLineContent) => recursive(newLineContent, newStructure, iteration + 1)
-          case None => structureUpdated
+    def safeRecursive(modelData: ModelData): F[ModelData] =
+      ME.tailRecM(modelData) { currentData =>
+        reader.readLine().flatMap {
+          case Some(line) => aggregateResults(line, currentData).map(_.asLeft[ModelData])
+          case None => currentData.asRight[ModelData].pure[F]
         }
-      } yield result
-    }
+      }
 
     for {
       line <- reader.readLine()
       data <- line match {
-        case Some(lineContent) => recursive(lineContent, Map.empty)
+        case Some(lineContent) =>
+          val initialModelData = ModelData.empty
+          aggregateResults(lineContent, initialModelData).flatMap(safeRecursive)
         case None => ME.raiseError("File doesn't have content!")
       }
-    } yield data
+    } yield data.structure
   }
 
+}
+
+final case class ModelData(structure: Map[Int, List[Int]], iteration: Int)
+object ModelData {
+  def empty: ModelData = ModelData(Map.empty[Int, List[Int]], 0)
 }
