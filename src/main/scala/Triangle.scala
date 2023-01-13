@@ -9,7 +9,7 @@ trait Triangle[F[_]] {
 
   def find(structure: Map[Int, List[Int]], startAtTriangleLevel: Int = 0): F[List[Int]] = {
     def findPath(currentTriangleLevel: Int, currentPath: List[Int], starterIndex: Int): List[Int] = {
-      val nextTriangleLevel = currentTriangleLevel + 1
+      val nextTriangleLevel = currentTriangleLevel - 1
       structure
         .get(nextTriangleLevel)
         .flatMap { upperRow =>
@@ -33,19 +33,19 @@ trait Triangle[F[_]] {
     }
 
     def findBetterPath(currentTriangleLevel: Int, leftNode: Node, rightNode: Node): Node = {
-      val leftPath = findPath(currentTriangleLevel + 1, leftNode.value :: Nil, leftNode.index)
-      val rightPath = findPath(currentTriangleLevel + 1, rightNode.value :: Nil, rightNode.index)
+      val leftPath = findPath(currentTriangleLevel - 1, leftNode.value :: Nil, leftNode.index)
+      val rightPath = findPath(currentTriangleLevel - 1, rightNode.value :: Nil, rightNode.index)
 
       if (leftPath.sum <= rightPath.sum) leftNode else rightNode
     }
 
     structure
-      .get(startAtTriangleLevel)
-      .map(row => row.zipWithIndex.map { case (value, index) => findPath(startAtTriangleLevel, value :: Nil, index) })
+      .get(structure.keys.size - 1)
+      .map(row => row.zipWithIndex.map { case (value, index) => findPath(structure.keys.size - 1, value :: Nil, index) })
       .map(_.map(row => (row, row.sum)).minBy(_._2)._1)
       .getOrElse(List.empty[Int])
       .pure[F]
   }
 }
 
-final case class ShortestTrianglePath[F[_]]()(implicit protected val A: Applicative[F]) extends Triangle[F]
+class ShortestTrianglePath[F[_]]()(implicit protected val A: Applicative[F]) extends Triangle[F]
