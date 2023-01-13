@@ -7,7 +7,7 @@ import scala.util.Try
 trait Triangle[F[_]] {
   implicit protected val A: Applicative[F]
 
-  def find(structure: Map[Int, List[Int]], startAtTriangleLevel: Int = 0): F[List[Int]] = {
+  def find(structure: Map[Int, List[Int]]): F[List[Int]] = {
     def findPath(currentTriangleLevel: Int, currentPath: List[Int], starterIndex: Int): List[Int] = {
       val nextTriangleLevel = currentTriangleLevel - 1
       structure
