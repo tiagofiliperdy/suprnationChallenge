@@ -6,6 +6,6 @@ sbt run
 
 ### Run Test
 ```shell
-# will run shortest triangle path on file data_small.txt
+# will run all tests of repo
 sbt test
 ```
