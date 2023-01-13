@@ -1,6 +1,7 @@
 import cats.implicits._
 import input.Reader
 import cats.MonadError
+import model.TransformerData
 
 import scala.util.{Failure, Success, Try}
 
@@ -13,7 +14,7 @@ class DataTransformer[F[_]](reader: Reader[F])(implicit ME: MonadError[F, String
       case Success(value) => value.pure[F]
     }
 
-    def aggregateResults(line: String, modelData: ModelData): F[ModelData] =
+    def aggregateResults(line: String, modelData: TransformerData): F[TransformerData] =
       line
         .split(" ")
         .toList
@@ -21,11 +22,11 @@ class DataTransformer[F[_]](reader: Reader[F])(implicit ME: MonadError[F, String
         .map(modelData.iteration -> _)
         .map(keyValue => modelData.copy(structure = modelData.structure + keyValue, iteration = modelData.iteration + 1))
 
-    def safeRecursive(modelData: ModelData): F[ModelData] =
+    def safeRecursive(modelData: TransformerData): F[TransformerData] =
       ME.tailRecM(modelData) { currentData =>
         reader.readLine().flatMap {
-          case Some(line) => aggregateResults(line, currentData).map(_.asLeft[ModelData])
-          case None => currentData.asRight[ModelData].pure[F]
+          case Some(line) => aggregateResults(line, currentData).map(_.asLeft[TransformerData])
+          case None => currentData.asRight[TransformerData].pure[F]
         }
       }
 
@@ -33,7 +34,7 @@ class DataTransformer[F[_]](reader: Reader[F])(implicit ME: MonadError[F, String
       line <- reader.readLine()
       data <- line match {
         case Some(lineContent) =>
-          val initialModelData = ModelData.empty
+          val initialModelData = TransformerData.empty
           aggregateResults(lineContent, initialModelData).flatMap(safeRecursive)
         case None => ME.raiseError("File doesn't have content!")
       }
@@ -42,7 +43,3 @@ class DataTransformer[F[_]](reader: Reader[F])(implicit ME: MonadError[F, String
 
 }
 
-final case class ModelData(structure: Map[Int, List[Int]], iteration: Int)
-object ModelData {
-  def empty: ModelData = ModelData(Map.empty[Int, List[Int]], 0)
-}
