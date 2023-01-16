@@ -6,7 +6,7 @@ object Main extends App {
   import cats.implicits.catsStdInstancesForEither
   type F[A] = Either[String, A]
 
-  val reader: ReaderFromFile[F] = new ReaderFromFile[F]("data_small.txt")
+  val reader: ReaderFromFile[F] = new ReaderFromFile[F]("data_smaller.txt")
   val dataTransformer = new DataTransformer[F](reader)
 
   for {
