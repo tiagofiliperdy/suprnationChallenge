@@ -1,6 +1,6 @@
 ### Run App
 ```shell
-# will run shortest triangle path on file data_small.txt
+# will run shortest triangle path on file data_smaller.txt
 sbt run
 ```
 
