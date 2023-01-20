@@ -18,7 +18,7 @@ class InputReader[F[_]: Applicative]() extends Reader[F] {
     }
 }
 
-class ReaderFromFile[F[_]: Applicative](fileName: String) extends Reader[F] {
+  class ReaderFromFile[F[_]: Applicative](fileName: String) extends Reader[F] {
   private val bufferedSource: BufferedSource = Source.fromFile(fileName)
   private val iterator: Iterator[String] = bufferedSource.getLines()
 

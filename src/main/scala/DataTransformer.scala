@@ -1,12 +1,14 @@
 import cats.implicits._
 import input.Reader
 import cats.MonadError
+import model.Node
 
 import scala.util.{Failure, Success, Try}
 
 class DataTransformer[F[_]](reader: Reader[F])(implicit ME: MonadError[F, String]) {
+  import DataTransformer._
 
-  def readData: F[Map[Int, List[Int]]] = {
+  def readData: F[List[List[Node]]] = {
 
     def toInt(str: String): F[Int] = Try(str.toInt) match {
       case Failure(_) => ME.raiseError[Int]("File doesn't contain only numbers!")
@@ -18,8 +20,8 @@ class DataTransformer[F[_]](reader: Reader[F])(implicit ME: MonadError[F, String
         .split(" ")
         .toList
         .traverse(toInt)
-        .map(modelData.iteration -> _)
-        .map(keyValue => modelData.copy(structure = modelData.structure + keyValue, iteration = modelData.iteration + 1))
+        .map(_.zipWithIndex.map {case (a, b) => Node(a, b) })
+        .map(modelData.append)
 
     def safeRecursive(modelData: ModelData): F[ModelData] =
       ME.tailRecM(modelData) { currentData =>
@@ -42,7 +44,14 @@ class DataTransformer[F[_]](reader: Reader[F])(implicit ME: MonadError[F, String
 
 }
 
-final case class ModelData(structure: Map[Int, List[Int]], iteration: Int)
-object ModelData {
-  def empty: ModelData = ModelData(Map.empty[Int, List[Int]], 0)
+object DataTransformer {
+
+  case class ModelData(structure: List[List[Node]]) {
+    def append(row: List[Node]): ModelData = ModelData(structure :+ row)
+  }
+
+  object ModelData {
+    def empty: ModelData = ModelData(List.empty[List[Node]])
+  }
+
 }
