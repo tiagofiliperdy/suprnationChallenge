@@ -1,4 +1,5 @@
 
+import model.Node
 import org.scalatest.funsuite.AnyFunSuite
 
 class TriangleSpec extends AnyFunSuite {
@@ -6,49 +7,49 @@ class TriangleSpec extends AnyFunSuite {
   implicit val f = cats.implicits.catsStdInstancesForEither
 
   test("Shortest - Simple triangle") {
-    val triangle: Map[Int, List[Int]] =
-      Map(
-        0 ->        List(7),
-        1 ->      List(6, 3),
-        2 ->    List(3, 8, 5),
-        3 -> List(11, 2, 10, 9)
+    val triangle: List[List[Node]] =
+      List(
+        List(Node(7, 0)),
+        List(Node(6, 0), Node(3, 1)),
+        List(Node(3, 0), Node(8, 1), Node(5, 2)),
+        List(Node(11, 0), Node(2, 1), Node(10, 2), Node(9, 3))
       )
 
     val expectedPath = List(2, 3, 6, 7)
     val shortestPathTriangle = new ShortestTrianglePath()
-//    val resultPath = shortestPathTriangle.find(triangle)
-//    assert(resultPath == Right(expectedPath))
+    val resultPath = shortestPathTriangle.find(triangle)
+    assert(resultPath == Right(expectedPath))
   }
 
   test("Shortest - Repeated values triangle") {
-    val triangle: Map[Int, List[Int]] =
-      Map(
-        0 ->        List(7),
-        1 ->      List(6, 3),
-        2 ->    List(3, 3, 5),
-        3 -> List(11, 2, 10, 9)
+    val triangle: List[List[Node]] =
+      List(
+        List(Node(7,0)),
+        List(Node(6, 0), Node(3, 1)),
+        List(Node(3, 0), Node(3, 1), Node(5, 2)),
+        List(Node(11, 0), Node(2, 1), Node(10, 2), Node(9, 3))
       )
 
     val expectedPath = List(2, 3, 3, 7)
     val shortestPathTriangle = new ShortestTrianglePath()
-//    val resultPath = shortestPathTriangle.find(triangle)
-//    assert(resultPath == Right(expectedPath))
+    val resultPath = shortestPathTriangle.find(triangle)
+    assert(resultPath == Right(expectedPath))
   }
 
   test("Shortest - No obvious path triangle") {
-    val triangle: Map[Int, List[Int]] =
-      Map(
-        0 ->              List(1),
-        1 ->            List(5, 8),
-        2 ->          List(2, 3, 2),
-        3 ->        List(9, 8, 5, 5),
-        4 ->      List(5, 1, 3, 3, 5),
-        5 ->    List(6, 5, 3, 2, 10, 11)
+    val triangle: List[List[Node]] =
+      List(
+        List(Node(1, 0)),
+        List(Node(5, 0), Node(8, 1)),
+        List(Node(2, 0), Node(3, 1), Node(2, 2)),
+        List(Node(9, 0), Node(8, 1), Node(5, 2), Node(5, 3)),
+        List(Node(5, 0), Node(1, 1), Node(3, 2), Node(3, 3), Node(5, 4)),
+        List(Node(6, 0), Node(5, 1), Node(3, 2), Node(2, 3), Node(10, 4), Node(11, 5))
       )
 
     val expectedPath = List(2, 3, 5, 3, 5, 1)
     val shortestPathTriangle = new ShortestTrianglePath()
-//    val resultPath = shortestPathTriangle.find(triangle)
-//    assert(resultPath == Right(expectedPath))
+    val resultPath = shortestPathTriangle.find(triangle)
+    assert(resultPath == Right(expectedPath))
   }
 }

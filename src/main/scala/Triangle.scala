@@ -2,53 +2,37 @@ import cats.Applicative
 import model.Node
 import cats.implicits._
 
-import scala.util.Try
-
 trait Triangle[F[_]] {
   implicit protected val A: Applicative[F]
 
   def find(structure: List[List[Node]]): F[List[Int]] = {
-    /*def findPath(currentTriangleLevel: Int, currentPath: List[Int], starterIndex: Int): List[Int] = {
-      val nextTriangleLevel = currentTriangleLevel - 1
-      structure
-        .get(nextTriangleLevel)
-        .flatMap { upperRow =>
-          // analyse upper left
-          val leftIndex = starterIndex - 1
-          val upperLeft = Try(upperRow(leftIndex)).map(Node(_, leftIndex)).toOption
-          // analyse upper right
-          val rightIndex = starterIndex
-          val upperRight = Try(upperRow(rightIndex)).map(Node(_, rightIndex)).toOption
+    val allPaths =
+      structure.foldLeft(List.empty[List[Node]]) { (acc, triangleRow) =>
+        val solutions =
+          if(acc.isEmpty) acc :+ triangleRow
+          else acc
 
-          val upperPath =
-            (upperLeft, upperRight) match {
-              case (Some(leftNode), Some(rightNode)) => Option(findBetterPath(currentTriangleLevel, leftNode, rightNode))
-              case (None, Some(rightNode)) => Option(rightNode)
-              case (Some(leftNode), None) => Option(leftNode)
-              case (None, None) => none[Node]
-            }
+        val maybeNextRow: Option[List[Node]] = structure.drop(triangleRow.size).headOption
+        val allSolutions = solutions.flatMap { solution =>
+          triangleRow.find(_ == solution.head).map { node =>
+            maybeNextRow.flatMap { nextRow =>
+              val maybeLeft: Option[Node] = nextRow.find(_.index == node.index)
+              val maybeRight: Option[Node] = nextRow.find(_.index == (node.index + 1))
 
-          upperPath.map(node => findPath(nextTriangleLevel, currentPath :+ node.value, node.index))
-        }.getOrElse(currentPath)
-    }
+              (maybeLeft, maybeRight)
+                .mapN((left, right) => List(left +: solution, right +: solution))
+            }.getOrElse(solutions) // end of triangle
+          }.getOrElse(List.empty[List[Node]]) // logic error
+        }
 
-    def findBetterPath(currentTriangleLevel: Int, leftNode: Node, rightNode: Node): Node = {
-      val leftPath = findPath(currentTriangleLevel - 1, leftNode.value :: Nil, leftNode.index)
-      val rightPath = findPath(currentTriangleLevel - 1, rightNode.value :: Nil, rightNode.index)
+        allSolutions
+          .groupBy(_.head.index)
+          .values
+          .map(_.minBy(_.map(_.value).sum))
+          .toList
+      }
 
-      if (leftPath.sum <= rightPath.sum) leftNode else rightNode
-    }
-
-    structure
-      .get(structure.keys.size - 1)
-      .map(row => row.zipWithIndex.map { case (value, index) => findPath(structure.keys.size - 1, value :: Nil, index) })
-      .map(_.map(row => (row, row.sum)).minBy(_._2)._1)
-      .getOrElse(List.empty[Int])
-      .pure[F]*/
-
-    structure.foreach(println)
-
-    ???
+    allPaths.map(_.map(_.value)).map(lists => (lists, lists.sum)).minBy(_._2)._1.pure[F]
   }
 }
 
