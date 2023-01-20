@@ -7,8 +7,8 @@ import scala.util.Try
 trait Triangle[F[_]] {
   implicit protected val A: Applicative[F]
 
-  def find(structure: Map[Int, List[Int]]): F[List[Int]] = {
-    def findPath(currentTriangleLevel: Int, currentPath: List[Int], starterIndex: Int): List[Int] = {
+  def find(structure: List[List[Node]]): F[List[Int]] = {
+    /*def findPath(currentTriangleLevel: Int, currentPath: List[Int], starterIndex: Int): List[Int] = {
       val nextTriangleLevel = currentTriangleLevel - 1
       structure
         .get(nextTriangleLevel)
@@ -44,7 +44,11 @@ trait Triangle[F[_]] {
       .map(row => row.zipWithIndex.map { case (value, index) => findPath(structure.keys.size - 1, value :: Nil, index) })
       .map(_.map(row => (row, row.sum)).minBy(_._2)._1)
       .getOrElse(List.empty[Int])
-      .pure[F]
+      .pure[F]*/
+
+    structure.foreach(println)
+
+    ???
   }
 }
 
