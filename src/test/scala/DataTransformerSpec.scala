@@ -11,10 +11,10 @@ class DataTransformerSpec extends AnyFunSuite {
     val result = dataTransformer.readData
 
     assert(result.isRight)
-//    assert(result.map(_.get(0)) == Right(Some(List(1))))
-//    assert(result.map(_.get(18)) == Right(Some((1 to 19).toList)))
-//    assert(result.map(_.get(49)) == Right(Some((1 to 50).toList)))
-//    assert(result.map(_.get(50)) == Right(None))
+    assert(result.map(_.head.map(_.value)) == Right(List(1)))
+    assert(result.map(_.drop(18).head.map(_.value)) == Right((1 to 19).toList))
+    assert(result.map(_.drop(49).head.map(_.value)) == Right((1 to 50).toList))
+    assert(result.map(_.drop(50).headOption) == Right(None))
   }
 
   test("DataTransformer - should fail on empty file") {
@@ -41,6 +41,6 @@ class DataTransformerSpec extends AnyFunSuite {
 
     val result = dataTransformer.readData
 
-//    assert(result.map(_.keys.size) == Right(2000))
+    assert(result.map(_.size) == Right(2000))
   }
 }
