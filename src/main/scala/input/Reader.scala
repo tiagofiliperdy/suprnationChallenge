@@ -13,7 +13,7 @@ class InputReader[F[_]: Applicative]() extends Reader[F] {
 
   override def readLine(): F[Option[String]] =
     StdIn.readLine() match {
-      case null => none[String].pure[F]
+      case null | "" => none[String].pure[F]
       case line => line.some.pure[F]
     }
 }

@@ -1,12 +1,12 @@
 
 import cats.implicits._
-import input.ReaderFromFile
+import input.{InputReader, Reader}
 
 object Main extends App {
   import cats.implicits.catsStdInstancesForEither
   type F[A] = Either[String, A]
 
-  val reader: ReaderFromFile[F] = new ReaderFromFile[F]("data_smaller.txt")
+  val reader: Reader[F] = new InputReader[F]
   val dataTransformer = new DataTransformer[F](reader)
 
   for {
